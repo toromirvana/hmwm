@@ -1,28 +1,19 @@
-PREFIX = /usr/local
-CC = gcc
-CFLAGS = -O3 -Wall
-LIBS = -lX11
+C = gcc
+CFLAGS = -O3 -Wall -Wextra
+LDFLAGS = -lX11
 
+TARGET = hmwm
 SRC = hmwm.c
-OBJ = ${SRC:.c=.o}
 
-all: hmwm
+all: $(TARGET)
 
-micro_twm: ${OBJ}
-	${CC} -o $@ ${OBJ} ${LIBS}
-
-.c.o:
-	${CC} -c ${CFLAGS} $<
+$(TARGET): $(SRC)
+	$(CC) $(CFLAGS) $(SRC) -o $(TARGET) $(LDFLAGS)
 
 clean:
-	rm -f hmwm ${OBJ}
+	rm -f $(TARGET)
 
-install: all
-	mkdir -p ${DESTDIR}${PREFIX}/bin
-	cp -f hmwm ${DESTDIR}${PREFIX}/bin
-	chmod 755 ${DESTDIR}${PREFIX}/bin/hmwm
+install: $(TARGET)
+	install -Dm755 $(TARGET) /usr/local/bin/$(TARGET)
 
-uninstall:
-	rm -f ${DESTDIR}${PREFIX}/bin/hmwm
-
-.PHONY: all clean install uninstall
+.PHONY: all clean install
