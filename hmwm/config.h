@@ -6,10 +6,10 @@
 
 // visual aesthetics
 #define BORDER_WIDTH	1
-#define COLOR_FOCUSED	0x444444  // Gray outline for your focused Windows
+#define COLOR_FOCUSED	0x444444
 
-// Default Applications (Swap out "st" for whatever terminal you want!
-const char* terminal[] = { "ash", NULL };
+// Default Applications (pretty self explanitory.)
+const char* terminal[] = { "st", NULL };
 const char* launcher[] = { "dmenu_run", NULL };
 
 #define MODKEY Mod4Mask
