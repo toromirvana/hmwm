@@ -1,6 +1,6 @@
-C = gcc
+CC ?= gcc
 CFLAGS = -O3 -Wall -Wextra
-LDFLAGS = -lX11
+LDLIBS = -lX11
 
 TARGET = hmwm
 SRC = hmwm.c
@@ -8,7 +8,7 @@ SRC = hmwm.c
 all: $(TARGET)
 
 $(TARGET): $(SRC)
-	$(CC) $(CFLAGS) $(SRC) -o $(TARGET) $(LDFLAGS)
+	$(CC) $(CFLAGS) $(SRC) -o $(TARGET) $(LDLIBS)
 
 clean:
 	rm -f $(TARGET)
