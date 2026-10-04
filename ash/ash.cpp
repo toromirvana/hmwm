@@ -1,5 +1,3 @@
-// ash.cpp — minimal st-style X11 terminal, C++20
-// Build dependencies: Xlib, Xft, Fontconfig, libvterm, libutil
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
@@ -50,7 +48,7 @@ int cols = InitialCols, rows = InitialRows;
 int winW = 0, winH = 0;
 int cellW = 9, cellH = 18, ascent = 14;
 double fontSize = InitialFontSize;
-int scrollOffset = 0;  // lines scrolled back into history
+int scrollOffset = 0;
 std::deque<std::vector<VTermScreenCell>> history;
 Atom wmDelete;
 
@@ -90,19 +88,15 @@ int setTermProp(VTermProp prop, VTermValue* val, void*) {
     return 1;
 }
 
-// Called by libvterm when a line scrolls off the top of the screen.
-// The cells pointer is only valid during the call, so copy them.
 int pushScrollback(int lineCols, const VTermScreenCell* cells, void*) {
     if (lineCols <= 0 || !cells) return 1;
     history.emplace_back(cells, cells + lineCols);
     if (history.size() > ScrollbackLines) history.pop_front();
-    // Keep the view anchored while the user is scrolled back.
     if (scrollOffset > 0)
         scrollOffset = std::min<int>(scrollOffset + 1, static_cast<int>(history.size()));
     return 1;
 }
 
-// Cell at screen position (r, c), taking the scroll offset into account.
 VTermScreenCell cellAt(int r, int c) {
     VTermScreenCell cell{};
     int row = r - scrollOffset;
@@ -143,8 +137,6 @@ void draw() {
                 rr = gg = bb = gray[idx];
             }
 
-            // Reverse video (used by vis for its cursor/selection):
-            // fill the cell with the text color and draw the glyph in black.
             if (cell.attrs.reverse) {
                 XSetForeground(dpy, gc, rgb(rr, gg, bb));
                 XFillRectangle(dpy, win, gc, c * cellW, r * cellH, cellW, cellH);
@@ -168,7 +160,6 @@ void draw() {
     if (cursorVisible && scrollOffset == 0 && cursorInside) {
         VTermScreenCell cell{};
         vterm_screen_get_cell(vts, cursor, &cell);
-        // Skip our block if the app already drew a reverse-video cursor cell.
         if (!cell.attrs.reverse) {
             const int x = cursor.col * cellW, y = cursor.row * cellH;
             XSetForeground(dpy, gc, rgb(220, 220, 220));
@@ -182,7 +173,6 @@ void draw() {
     XFlush(dpy);
 }
 
-// Load the font at the given size and recompute the cell metrics.
 bool loadFont(double size) {
     char name[64];
     std::snprintf(name, sizeof(name), "monospace:size=%g", size);
@@ -198,7 +188,6 @@ bool loadFont(double size) {
     return true;
 }
 
-// Recompute the character grid from the pixel size and the cell size.
 void updateGrid() {
     const int newCols = std::max(1, winW / cellW);
     const int newRows = std::max(1, winH / cellH);
@@ -245,7 +234,6 @@ void handleKey(XKeyEvent* ev) {
     if (ctrl && shift && sym == XK_Page_Up)   { changeFontSize(+1); return; }
     if (ctrl && shift && sym == XK_Page_Down) { changeFontSize(-1); return; }
 
-    // Scrollback on the primary screen; full-screen apps get the keys instead.
     if (!altScreen && !ctrl) {
         if (sym == XK_Page_Up)   { scrollBy(rows / 2);  return; }
         if (sym == XK_Page_Down) { scrollBy(-rows / 2); return; }
@@ -289,7 +277,7 @@ void cleanup() {
     }
 }
 
-} // namespace
+}
 
 int main() {
     dpy = XOpenDisplay(nullptr);
